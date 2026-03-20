@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineFreePK – Free Movies Online</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: #0a0a0a; color: #fff; font-family: 'Rajdhani', sans-serif; min-height: 100vh; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #e50914; border-radius: 3px; }
+
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    @keyframes slideUp { from { opacity:0; transform:translateY(40px) } to { opacity:1; transform:translateY(0) } }
+
+    /* ── NAVBAR ── */
+    #navbar {
+      position: fixed; top:0; left:0; right:0; z-index:500;
+      padding: 0 40px; height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: all 0.3s;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    }
+    #navbar.scrolled {
+      background: rgba(10,10,10,0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(229,9,20,0.2);
+    }
+    .logo {
+      font-family: 'Bebas Neue', cursive; font-size: 28px; letter-spacing: 4px; cursor: pointer;
+      background: linear-gradient(135deg, #e50914, #ff6b35);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0;
+    }
+    .logo span { -webkit-text-fill-color: #fff; }
+    .logo small { font-size: 12px; letter-spacing: 2px; -webkit-text-fill-color: #555; margin-left: 4px; }
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      color: #aaa; padding: 7px 18px; border-radius: 20px; cursor: pointer;
+      font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    .nav-tab.active { background: #e50914; border-color: #e50914; color: #fff; }
+    .nav-tab:hover:not(.active) { border-color: rgba(255,255,255,0.35); color: #fff; }
+    #nav-auth { display: flex; align-items: center; gap: 12px; }
+    .btn-signin {
+      background: linear-gradient(135deg, #e50914, #c00); color: #fff; border: none;
+      padding: 8px 24px; border-radius: 20px; cursor: pointer;
+      font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1px;
+      box-shadow: 0 4px 20px rgba(229,9,20,0.4); transition: all 0.2s;
+    }
+    .btn-signin:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(229,9,20,0.6); }
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #e50914, #ff6b35);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-family: 'Bebas Neue', cursive; font-size: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    .user-name { color: #fff; font-weight: 700; font-size: 14px; }
+    .btn-signout {
+      background: transparent; border: 1px solid rgba(255,255,255,0.2);
+      color: #aaa; padding: 6px 16px; border-radius: 20px;
+      cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 13px; transition: all 0.2s;
+    }
+    .btn-signout:hover { border-color: #e50914; color: #fff; }
+
+    /* ── HERO ── */
+    #hero { position: relative; height: 90vh; min-height: 500px; overflow: hidden; margin-bottom: 48px; }
+    #hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    #hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.2) 100%);
+    }
+    #hero-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 200px; background: linear-gradient(to bottom, transparent, #0a0a0a); }
+    #hero-content { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 60px; padding-top: 80px; }
+    #hero-inner { max-width: 580px; }
+    .hero-badge {
+      background: #e50914; color: #fff; display: inline-block; padding: 4px 14px;
+      border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-bottom: 16px;
+    }
+    #hero-title {
+      font-family: 'Bebas Neue', cursive; font-size: clamp(52px, 8vw, 90px);
+      letter-spacing: 4px; margin: 0 0 16px; line-height: 0.95;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+    .hero-meta { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .hero-meta span { color: #ccc; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+    .hero-meta .dot { color: #e50914; }
+    .hero-desc { color: #bbb; font-size: 16px; line-height: 1.7; margin-bottom: 28px; max-width: 480px; }
+    .hero-btns { display: flex; gap: 14px; }
+    .btn-watch {
+      background: #e50914; color: #fff; border: none; padding: 14px 36px;
+      border-radius: 10px; cursor: pointer; font-family: 'Bebas Neue', cursive;
+      font-size: 22px; letter-spacing: 3px; box-shadow: 0 8px 30px rgba(229,9,20,0.5); transition: all 0.2s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .btn-watch:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(229,9,20,0.7); }
+    .btn-info {
+      background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+      padding: 14px 28px; border-radius: 10px; cursor: pointer; font-family: 'Bebas Neue', cursive;
+      font-size: 22px; letter-spacing: 3px; backdrop-filter: blur(6px); transition: all 0.2s;
+    }
+    .btn-info:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── STARS ── */
+    .stars { color: #f5c518; letter-spacing: 1px; }
+    .rating-val { color: #f5c518; font-size: 15px; margin-left: 8px; }
+
+    /* ── STATS BAR ── */
+    #stats-bar {
+      display: flex; justify-content: center; gap: clamp(20px, 5vw, 80px);
+      padding: 20px 40px 48px; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-family: 'Bebas Neue', cursive; font-size: 36px; letter-spacing: 2px;
+      background: linear-gradient(135deg, #e50914, #ff6b35);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-label { color: #666; font-size: 12px; letter-spacing: 2px; }
+
+    /* ── CATEGORY HEADER ── */
+    #cat-header { padding-top: 100px; padding-left: 60px; display: none; }
+    #cat-header h1 { font-family: 'Bebas Neue', cursive; font-size: 48px; letter-spacing: 4px; }
+    .red-line { width: 120px; height: 3px; background: #e50914; border-radius: 2px; margin-top: 8px; }
+
+    /* ── MAIN CONTENT ── */
+    #main-content { padding: 40px 40px 80px; }
+
+    /* ── SEARCH ── */
+    #search-wrap { max-width: 500px; margin: 0 auto 40px; position: relative; }
+    #search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #666; font-size: 18px; pointer-events: none; }
+    #search-input {
+      width: 100%; padding: 14px 20px 14px 48px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 30px; color: #fff; font-size: 15px;
+      font-family: 'Rajdhani', sans-serif; outline: none;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.3); transition: border-color 0.2s;
+    }
+    #search-input::placeholder { color: #555; }
+    #search-input:focus { border-color: rgba(229,9,20,0.5); }
+
+    /* ── CATEGORY ROW ── */
+    .cat-row { margin-bottom: 48px; }
+    .cat-row-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .cat-flag { font-size: 28px; }
+    .cat-row-header h2 { color: #fff; font-family: 'Bebas Neue', cursive; font-size: 28px; letter-spacing: 3px; }
+    .cat-divider { flex: 1; height: 1px; background: linear-gradient(to right, #e50914, transparent); margin-left: 16px; }
+    .scroll-btns { display: flex; gap: 8px; }
+    .scroll-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; border-radius: 6px; width: 32px; height: 32px; cursor: pointer;
+      font-size: 18px; display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px); transition: background 0.2s;
+    }
+    .scroll-btn:hover { background: rgba(229,9,20,0.4); border-color: #e50914; }
+    .movies-row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px; scroll-behavior: smooth; }
+    .movies-row::-webkit-scrollbar { height: 4px; }
+
+    /* ── MOVIE CARD ── */
+    .movie-card {
+      position: relative; border-radius: 12px; overflow: hidden;
+      cursor: pointer; flex-shrink: 0; width: 180px; height: 270px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); background: #111;
+      transform: scale(1); transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .movie-card:hover { transform: scale(1.06) translateY(-8px); box-shadow: 0 20px 60px rgba(229,9,20,0.5); }
+    .movie-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%); transition: background 0.3s;
+    }
+    .movie-card:hover .card-overlay {
+      background: linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+    }
+    .card-free-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: #e50914; border-radius: 6px; padding: 3px 10px;
+      font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 1px;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .movie-card:hover .card-free-badge { opacity: 1; }
+    .card-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 12px 12px; }
+    .card-title {
+      color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .card-sub { color: #aaa; font-size: 11px; margin-top: 2px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s; }
+    .movie-card:hover .card-sub { max-height: 40px; opacity: 1; }
+
+    /* ── NO RESULTS ── */
+    #no-results {
+      text-align: center; color: #555; padding: 80px 0;
+      font-family: 'Bebas Neue', cursive; font-size: 28px; letter-spacing: 3px; display: none;
+    }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(8px); animation: fadeIn 0.2s ease;
+    }
+    .modal-box {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border-radius: 20px; width: min(820px, 95vw); max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 30px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(229,9,20,0.3);
+      animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .modal-backdrop-wrap { position: relative; height: 280px; overflow: hidden; border-radius: 20px 20px 0 0; }
+    .modal-backdrop-img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-backdrop-grad { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, #1a1a2e 100%); }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6);
+      border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px); transition: background 0.2s;
+    }
+    .modal-close:hover { background: #e50914; }
+    .modal-body { padding: 0 32px 32px; display: flex; gap: 28px; }
+    .modal-poster {
+      width: 130px; height: 195px; object-fit: cover; border-radius: 12px;
+      margin-top: -60px; flex-shrink: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      border: 3px solid rgba(229,9,20,0.5);
+    }
+    .modal-info { flex: 1; padding-top: 12px; }
+    .modal-title { color: #fff; font-family: 'Bebas Neue', cursive; font-size: 36px; letter-spacing: 3px; margin: 0 0 6px; }
+    .modal-tags { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .modal-tag {
+      background: rgba(255,255,255,0.1); color: #ccc; padding: 3px 12px;
+      border-radius: 20px; font-size: 12px; border: 1px solid rgba(255,255,255,0.15);
+    }
+    .modal-rating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .modal-desc { color: #bbb; line-height: 1.7; font-size: 14px; margin: 0 0 24px; }
+    .modal-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-play {
+      background: #e50914; color: #fff; border: none; padding: 12px 28px;
+      border-radius: 8px; cursor: pointer; font-family: 'Bebas Neue', cursive;
+      font-size: 18px; letter-spacing: 2px; display: flex; align-items: center;
+      gap: 8px; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-play:hover { background: #c00; transform: translateY(-1px); }
+    .btn-play.disabled { background: rgba(229,9,20,0.3); color: #ff6b6b; border: 1px solid #e50914; cursor: not-allowed; }
+    .btn-dl {
+      background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      padding: 12px 28px; border-radius: 8px; cursor: pointer; font-family: 'Bebas Neue', cursive;
+      font-size: 18px; letter-spacing: 2px; display: flex; align-items: center;
+      gap: 8px; text-decoration: none; backdrop-filter: blur(4px); transition: all 0.2s;
+    }
+    .btn-dl:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── AUTH MODAL ── */
+    .auth-box {
+      background: linear-gradient(135deg, #0d0d0d 0%, #1a0000 100%);
+      border-radius: 20px; width: 420px; padding: 40px;
+      box-shadow: 0 30px 100px rgba(229,9,20,0.4), 0 0 0 1px rgba(229,9,20,0.3);
+      animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .auth-logo { text-align: center; margin-bottom: 28px; }
+    .auth-logo-text {
+      font-family: 'Bebas Neue', cursive; font-size: 36px; letter-spacing: 4px;
+      background: linear-gradient(135deg, #e50914, #ff6b35);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .auth-logo-text span { -webkit-text-fill-color: #fff; }
+    .auth-subtitle { color: #555; font-size: 12px; letter-spacing: 2px; margin-top: 4px; }
+    .auth-tabs {
+      display: flex; background: rgba(255,255,255,0.05);
+      border-radius: 10px; padding: 4px; margin-bottom: 24px;
+    }
+    .auth-tab {
+      flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer;
+      font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px;
+      letter-spacing: 1px; transition: all 0.2s; background: transparent; color: #888;
+    }
+    .auth-tab.active { background: #e50914; color: #fff; }
+    .field-group { margin-bottom: 16px; }
+    .field-label { color: #888; font-size: 12px; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+    .field-input {
+      width: 100%; padding: 12px 16px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #fff; font-size: 14px;
+      font-family: 'Rajdhani', sans-serif; outline: none; transition: border-color 0.2s;
+    }
+    .field-input::placeholder { color: #444; }
+    .field-input:focus { border-color: rgba(229,9,20,0.5); }
+    .auth-error { color: #ff6b6b; font-size: 13px; margin-bottom: 14px; display: none; }
+    .btn-auth {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #e50914, #c00); border: none;
+      border-radius: 10px; color: #fff; font-family: 'Bebas Neue', cursive;
+      font-size: 20px; letter-spacing: 3px; cursor: pointer;
+      box-shadow: 0 8px 30px rgba(229,9,20,0.4); transition: all 0.2s;
+    }
+    .btn-auth:hover { transform: translateY(-1px); box-shadow: 0 12px 40px rgba(229,9,20,0.6); }
+    .auth-terms { text-align: center; color: #555; font-size: 12px; margin-top: 20px; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.07); padding: 40px 60px;
+      background: rgba(0,0,0,0.5); display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 20px;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', cursive; font-size: 24px; letter-spacing: 4px;
+      background: linear-gradient(135deg, #e50914, #ff6b35);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .footer-logo span { -webkit-text-fill-color: #fff; }
+    .footer-sub { color: #555; font-size: 12px; margin-top: 4px; }
+    .footer-copy { color: #444; font-size: 12px; }
+
+    @media (max-width: 768px) {
+      #navbar { padding: 0 16px; }
+      .nav-tab { padding: 6px 10px; font-size: 11px; }
+      #hero-content { padding: 0 20px; padding-top: 80px; }
+      #main-content { padding: 24px 16px 60px; }
+      .auth-box { width: 95vw; padding: 28px 20px; }
+      .modal-body { flex-direction: column; }
+      footer { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="logo">CINE<span>FREE</span><small>PK</small></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="ALL">ALL</button>
+    <button class="nav-tab" data-tab="HOLLYWOOD">HOLLYWOOD</button>
+    <button class="nav-tab" data-tab="BOLLYWOOD">BOLLYWOOD</button>
+    <button class="nav-tab" data-tab="PAKISTANI">PAKISTANI</button>
+  </div>
+  <div id="nav-auth">
+    <button class="btn-signin" id="btn-open-auth">SIGN IN</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <img id="hero-img" src="" alt="Featured"/>
+  <div id="hero-overlay"></div>
+  <div id="hero-bottom"></div>
+  <div id="hero-content">
+    <div id="hero-inner">
+      <div class="hero-badge">&#127942; FEATURED FILM</div>
+      <h1 id="hero-title"></h1>
+      <div class="hero-meta" id="hero-meta"></div>
+      <div class="modal-rating-row" id="hero-stars"></div>
+      <p class="hero-desc" id="hero-desc"></p>
+      <div class="hero-btns">
+        <button class="btn-watch" id="hero-watch">&#9654; WATCH FREE</button>
+        <button class="btn-info" id="hero-info">&#9432; MORE INFO</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div id="stats-bar">
+  <div class="stat-item"><div class="stat-value">18+</div><div class="stat-label">MOVIES</div></div>
+  <div class="stat-item"><div class="stat-value">3</div><div class="stat-label">CATEGORIES</div></div>
+  <div class="stat-item"><div class="stat-value">100%</div><div class="stat-label">HD QUALITY</div></div>
+  <div class="stat-item"><div class="stat-value">FREE</div><div class="stat-label">COST</div></div>
+</div>
+
+<!-- CATEGORY HEADER -->
+<div id="cat-header">
+  <h1 id="cat-header-title"></h1>
+  <div class="red-line"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+  <div id="search-wrap">
+    <span id="search-icon">&#128269;</span>
+    <input type="text" id="search-input" placeholder="Search movies..."/>
+  </div>
+  <div id="rows-container"></div>
+  <div id="no-results">NO MOVIES FOUND</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">CINEFREE<span>PK</span></div>
+    <div class="footer-sub">Free Movies for Everyone &bull; Hollywood &bull; Bollywood &bull; Pakistani</div>
+  </div>
+  <div class="footer-copy">&copy; 2025 CineFreePK. All rights reserved.</div>
+</footer>
+
+<!-- MOVIE MODAL -->
+<div id="movie-modal" style="display:none;">
+  <div class="modal-overlay" id="movie-overlay">
+    <div class="modal-box">
+      <div class="modal-backdrop-wrap">
+        <img class="modal-backdrop-img" id="modal-backdrop" src="" alt=""/>
+        <div class="modal-backdrop-grad"></div>
+        <button class="modal-close" id="modal-close-btn">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <img class="modal-poster" id="modal-poster" src="" alt=""/>
+        <div class="modal-info">
+          <h2 class="modal-title" id="modal-title"></h2>
+          <div class="modal-tags" id="modal-tags"></div>
+          <div class="modal-rating-row" id="modal-rating"></div>
+          <p class="modal-desc" id="modal-desc"></p>
+          <div class="modal-btns" id="modal-btns"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="auth-modal" style="display:none;">
+  <div class="modal-overlay" id="auth-overlay">
+    <div class="auth-box">
+      <div class="auth-logo">
+        <div class="auth-logo-text">CINE<span>FREE</span></div>
+        <div class="auth-subtitle" id="auth-subtitle">WELCOME BACK</div>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">Sign In</button>
+        <button class="auth-tab" id="tab-signup">Sign Up</button>
+      </div>
+      <div id="name-field" class="field-group" style="display:none;">
+        <label class="field-label">FULL NAME</label>
+        <input type="text" class="field-input" id="auth-name" placeholder="Your name"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">EMAIL ADDRESS</label>
+        <input type="email" class="field-input" id="auth-email" placeholder="you@example.com"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">PASSWORD</label>
+        <input type="password" class="field-input" id="auth-password" placeholder="Password (min 6 chars)"/>
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+      <button class="btn-auth" id="btn-auth-submit">SIGN IN</button>
+      <p class="auth-terms">By continuing, you agree to our Terms of Service.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const MOVIES = {
+  hollywood: [
+    { id:"h1", title:"Inception", year:2010, rating:"8.8", duration:"2h 28m", genre:"Sci-Fi / Thriller",
+      description:"A thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO.",
+      poster:"https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"h2", title:"The Dark Knight", year:2008, rating:"9.0", duration:"2h 32m", genre:"Action / Drama",
+      description:"When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological tests.",
+      poster:"https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"h3", title:"Interstellar", year:2014, rating:"8.6", duration:"2h 49m", genre:"Sci-Fi / Adventure",
+      description:"A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
+      poster:"https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1464802686167-b939a6910659?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"h4", title:"Avengers: Endgame", year:2019, rating:"8.4", duration:"3h 1m", genre:"Action / Adventure",
+      description:"After devastating events, the Avengers assemble once more in order to reverse Thanos's actions and restore balance to the universe.",
+      poster:"https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"h5", title:"The Matrix", year:1999, rating:"8.7", duration:"2h 16m", genre:"Sci-Fi / Action",
+      description:"A computer programmer discovers that reality as he knows it is a simulation, and joins a rebellion to overthrow its masters.",
+      poster:"https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"h6", title:"Oppenheimer", year:2023, rating:"8.3", duration:"3h", genre:"Biography / Drama",
+      description:"The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.",
+      poster:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1495584816685-4bdbf1b5057e?w=1400&h=600&fit=crop", videoUrl:"" },
+  ],
+  bollywood: [
+    { id:"b1", title:"Dangal", year:2016, rating:"8.3", duration:"2h 41m", genre:"Biography / Drama / Sports",
+      description:"Former wrestler Mahavir Singh Phogat trains his daughters to become world-class wrestlers, defying all odds.",
+      poster:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"b2", title:"3 Idiots", year:2009, rating:"8.4", duration:"2h 50m", genre:"Comedy / Drama",
+      description:"Two friends are searching for their long-lost companion. They revisit their college days and recall the hilarious antics of their eccentric friend.",
+      poster:"https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"b3", title:"Pathaan", year:2023, rating:"5.9", duration:"2h 26m", genre:"Action / Thriller",
+      description:"An Indian spy takes on the leader of a mercenary organization who is hell-bent on unleashing a bioweapon called Raktbeej.",
+      poster:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"b4", title:"Kabir Singh", year:2019, rating:"7.1", duration:"2h 53m", genre:"Drama / Romance",
+      description:"A medical student with a short temper falls into a spiral of self-destruction after his girlfriend is forced to marry someone else.",
+      poster:"https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1500099817043-86d46000d58f?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"b5", title:"RRR", year:2022, rating:"7.9", duration:"3h 7m", genre:"Action / Drama",
+      description:"A fictional story about two legendary revolutionaries who took a stand against the British colonialists in the 1920s.",
+      poster:"https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1601513445506-2ab0d4fb4229?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"b6", title:"Brahmastra", year:2022, rating:"5.6", duration:"2h 28m", genre:"Fantasy / Action",
+      description:"Shiva discovers he has a mysterious connection with fire and the Brahmastra, an ancient weapon of mythological power.",
+      poster:"https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1400&h=600&fit=crop", videoUrl:"" },
+  ],
+  pakistani: [
+    { id:"p1", title:"London Nahi Jaunga", year:2017, rating:"7.2", duration:"2h 25m", genre:"Comedy / Romance",
+      description:"A heartwarming comedy about a young man who does everything to avoid going to London while inadvertently falling in love.",
+      poster:"https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"p2", title:"Jawani Phir Nahi Aani", year:2015, rating:"7.0", duration:"2h 20m", genre:"Comedy",
+      description:"Three married men ditch their wives for a bachelor trip to Bangkok, which turns out to be anything but relaxing.",
+      poster:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"p3", title:"Bol", year:2011, rating:"8.1", duration:"2h 24m", genre:"Drama",
+      description:"A woman awaiting execution narrates her life story, exploring poverty, gender discrimination, and societal pressures in Pakistan.",
+      poster:"https://images.unsplash.com/photo-1517022812141-23620dba5c23?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"p4", title:"Waar", year:2013, rating:"8.0", duration:"2h 28m", genre:"Action / Thriller",
+      description:"Pakistani special forces officers go undercover to dismantle a major terrorist cell funded by foreign powers.",
+      poster:"https://images.unsplash.com/photo-1519999482648-25049ddd37b1?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"p5", title:"Actor in Law", year:2016, rating:"6.8", duration:"2h 18m", genre:"Comedy / Drama",
+      description:"An aspiring actor becomes a celebrity lawyer overnight and navigates courtrooms and cameras with hilarious results.",
+      poster:"https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=1400&h=600&fit=crop", videoUrl:"" },
+    { id:"p6", title:"Na Maloom Afraad", year:2014, rating:"7.5", duration:"2h 10m", genre:"Comedy / Crime",
+      description:"Three unemployed friends stumble upon a bag of money and must outwit gangsters to keep it and their lives.",
+      poster:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=600&fit=crop",
+      backdrop:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1400&h=600&fit=crop", videoUrl:"" },
+  ],
+};
+
+const FEATURED = MOVIES.hollywood[2];
+let currentUser = null, currentTab = "ALL", searchQuery = "", isLoginMode = true;
+
+function starsHTML(r) {
+  const f = Math.round(parseFloat(r)/2);
+  return '<span class="stars">'+'\u2605'.repeat(f)+'\u2606'.repeat(5-f)+'</span><span class="rating-val">'+r+' / 10</span>';
+}
+function safe(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+window.addEventListener('scroll', () => document.getElementById('navbar').classList.toggle('scrolled', window.scrollY>50));
+
+// Hero
+document.getElementById('hero-img').src = FEATURED.backdrop;
+document.getElementById('hero-title').textContent = FEATURED.title;
+document.getElementById('hero-desc').textContent = FEATURED.description;
+document.getElementById('hero-meta').innerHTML =
+  '<span>'+FEATURED.year+'</span><span><span class="dot">&bull;</span>'+FEATURED.duration+'</span><span><span class="dot">&bull;</span>'+FEATURED.genre+'</span>';
+document.getElementById('hero-stars').innerHTML = starsHTML(FEATURED.rating);
+document.getElementById('hero-watch').onclick = () => handleClick(FEATURED);
+document.getElementById('hero-info').onclick = () => handleClick(FEATURED);
+
+function createCard(m) {
+  const d = document.createElement('div');
+  d.className = 'movie-card';
+  d.innerHTML = '<img src="'+safe(m.poster)+'" alt="'+safe(m.title)+'" loading="lazy"/><div class="card-overlay"></div><div class="card-free-badge">FREE</div><div class="card-info"><div class="card-title">'+safe(m.title)+'</div><div class="card-sub">'+m.year+' &bull; '+m.duration+'</div></div>';
+  d.onclick = () => handleClick(m);
+  return d;
+}
+
+function createRow(label, flag, movies) {
+  if (!movies.length) return null;
+  const w = document.createElement('div'); w.className = 'cat-row';
+  const h = document.createElement('div'); h.className = 'cat-row-header';
+  h.innerHTML = '<span class="cat-flag">'+flag+'</span><h2>'+safe(label)+'</h2><div class="cat-divider"></div><div class="scroll-btns"><button class="scroll-btn" data-dir="-1">&#8249;</button><button class="scroll-btn" data-dir="1">&#8250;</button></div>';
+  w.appendChild(h);
+  const r = document.createElement('div'); r.className = 'movies-row';
+  movies.forEach(m => r.appendChild(createCard(m)));
+  w.appendChild(r);
+  h.querySelectorAll('.scroll-btn').forEach(b => b.onclick = () => r.scrollBy({left:parseInt(b.dataset.dir)*600,behavior:'smooth'}));
+  return w;
+}
+
+function renderRows() {
+  const c = document.getElementById('rows-container');
+  c.innerHTML = '';
+  const q = searchQuery.toLowerCase();
+  const f = l => l.filter(m => m.title.toLowerCase().includes(q)||m.genre.toLowerCase().includes(q));
+  const map = { HOLLYWOOD:['Hollywood Movies','&#127482;&#127480;',MOVIES.hollywood], BOLLYWOOD:['Bollywood Movies','&#127470;&#127475;',MOVIES.bollywood], PAKISTANI:['Pakistani Movies','&#127477;&#127472;',MOVIES.pakistani] };
+  let rows = [];
+  if (currentTab === 'ALL') {
+    rows = [createRow('Hollywood Movies','&#127482;&#127480;',f(MOVIES.hollywood)), createRow('Bollywood Movies','&#127470;&#127475;',f(MOVIES.bollywood)), createRow('Pakistani Movies','&#127477;&#127472;',f(MOVIES.pakistani))].filter(Boolean);
+  } else {
+    const [lbl,flg,lst] = map[currentTab];
+    const r = createRow(lbl,flg,f(lst)); if(r) rows.push(r);
+  }
+  rows.forEach(r => c.appendChild(r));
+  document.getElementById('no-results').style.display = rows.length===0?'block':'none';
+}
+
+function switchTab(tab) {
+  currentTab=tab; searchQuery=''; document.getElementById('search-input').value='';
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  const all = tab==='ALL';
+  document.getElementById('hero').style.display = all?'block':'none';
+  document.getElementById('stats-bar').style.display = all?'flex':'none';
+  const ch = document.getElementById('cat-header');
+  if (!all) {
+    ch.style.display='block';
+    const flags={HOLLYWOOD:'&#127482;&#127480;',BOLLYWOOD:'&#127470;&#127475;',PAKISTANI:'&#127477;&#127472;'};
+    document.getElementById('cat-header-title').innerHTML=flags[tab]+' '+tab+' MOVIES';
+  } else { ch.style.display='none'; }
+  renderRows();
+}
+document.querySelectorAll('.nav-tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+document.getElementById('search-input').oninput=e=>{searchQuery=e.target.value;renderRows();};
+
+function handleClick(m) { if(!currentUser){openAuth();return;} openModal(m); }
+
+function openModal(m) {
+  document.getElementById('modal-backdrop').src=m.backdrop;
+  document.getElementById('modal-poster').src=m.poster;
+  document.getElementById('modal-poster').alt=m.title;
+  document.getElementById('modal-title').textContent=m.title;
+  document.getElementById('modal-rating').innerHTML=starsHTML(m.rating);
+  document.getElementById('modal-desc').textContent=m.description;
+  document.getElementById('modal-tags').innerHTML=[m.year,m.duration,m.genre].map(t=>'<span class="modal-tag">'+safe(String(t))+'</span>').join('');
+  const b=document.getElementById('modal-btns');
+  b.innerHTML=m.videoUrl?'<a class="btn-play" href="'+safe(m.videoUrl)+'" target="_blank">&#9654; WATCH NOW</a><a class="btn-dl" href="'+safe(m.videoUrl)+'" download>&#11015; DOWNLOAD</a>':'<button class="btn-play disabled" disabled>&#9654; VIDEO COMING SOON</button>';
+  document.getElementById('movie-modal').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+document.getElementById('modal-close-btn').onclick=closeModal;
+document.getElementById('movie-overlay').onclick=e=>{if(e.target===document.getElementById('movie-overlay'))closeModal();};
+function closeModal(){document.getElementById('movie-modal').style.display='none';document.body.style.overflow='';}
+
+function openAuth(){isLoginMode=true;updateAuth();document.getElementById('auth-modal').style.display='flex';document.body.style.overflow='hidden';}
+function closeAuth(){document.getElementById('auth-modal').style.display='none';document.body.style.overflow='';['auth-name','auth-email','auth-password'].forEach(id=>document.getElementById(id).value='');document.getElementById('auth-error').style.display='none';}
+function updateAuth(){
+  document.getElementById('auth-subtitle').textContent=isLoginMode?'WELCOME BACK':'JOIN FOR FREE';
+  document.getElementById('tab-login').classList.toggle('active',isLoginMode);
+  document.getElementById('tab-signup').classList.toggle('active',!isLoginMode);
+  document.getElementById('name-field').style.display=isLoginMode?'none':'block';
+  document.getElementById('btn-auth-submit').textContent=isLoginMode?'SIGN IN':'CREATE ACCOUNT';
+  document.getElementById('auth-error').style.display='none';
+}
+document.getElementById('btn-open-auth').onclick=openAuth;
+document.getElementById('tab-login').onclick=()=>{isLoginMode=true;updateAuth();};
+document.getElementById('tab-signup').onclick=()=>{isLoginMode=false;updateAuth();};
+document.getElementById('auth-overlay').onclick=e=>{if(e.target===document.getElementById('auth-overlay'))closeAuth();};
+document.querySelectorAll('.field-input').forEach(inp=>inp.onkeydown=e=>{if(e.key==='Enter')submitAuth();});
+document.getElementById('btn-auth-submit').onclick=submitAuth;
+
+function submitAuth(){
+  const email=document.getElementById('auth-email').value.trim();
+  const pass=document.getElementById('auth-password').value;
+  const name=document.getElementById('auth-name').value.trim();
+  if(!email||!pass){showErr('Please fill all fields.');return;}
+  if(!email.includes('@')){showErr('Enter a valid email.');return;}
+  if(pass.length<6){showErr('Password must be at least 6 characters.');return;}
+  currentUser={name:name||email.split('@')[0],email};
+  closeAuth(); updateNav();
+}
+function showErr(m){const e=document.getElementById('auth-error');e.textContent=m;e.style.display='block';}
+function updateNav(){
+  const d=document.getElementById('nav-auth');
+  if(currentUser){
+    d.innerHTML='<div class="user-avatar">'+safe(currentUser.name[0].toUpperCase())+'</div><span class="user-name">'+safe(currentUser.name)+'</span><button class="btn-signout" id="btn-signout">Sign Out</button>';
+    document.getElementById('btn-signout').onclick=()=>{currentUser=null;updateNav();};
+  } else {
+    d.innerHTML='<button class="btn-signin" id="btn-open-auth">SIGN IN</button>';
+    document.getElementById('btn-open-auth').onclick=openAuth;
+  }
+}
+
+renderRows();
+</script>
+</body>
+</html>
